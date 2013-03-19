@@ -1,0 +1,19 @@
+# vim: ts=2 sw=2 sts=2 ft=apache
+Listen 1111
+<VirtualHost *:1111>
+  WSGIDaemonProcess asdf processes=2
+  WSGIProcessGroup asdf
+
+  DocumentRoot /var/asdf/.env
+  WSGIScriptAlias / /var/asdf/asdf.wsgi
+
+  <Directory /var/asdf>
+    Order allow,deny
+    allow from all
+  </Directory>
+
+  ErrorLog /var/log/apache2/asdf.error.log
+  LogLevel warn
+
+  ServerSignature Off
+</VirtualHost>

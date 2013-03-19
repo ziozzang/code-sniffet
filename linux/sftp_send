@@ -1,0 +1,14 @@
+#sftpkey must be 600 permission...
+chmod 600 login.key
+
+# Generate SFTP batch
+cat > /root/sftp_batch << EOF
+cd upload
+rm ${LOG_FILE_NAME}
+put ${LOG_FILE_NAME}
+quit
+EOF
+
+# Send file via batch
+cat /root/sftp_batch | sftp -P 1234 -oStrictHostKeyChecking=no -oIdentityFile=login.key account@servername
+

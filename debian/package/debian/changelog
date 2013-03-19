@@ -1,0 +1,5 @@
+package-name-here (__VERSION__) oneiric; urgency=low
+
+  * Initial Release.
+
+   -- Maintainer <blah@blah.com>  Wed, 8 Aug 2099 17:06:00 +0900

@@ -1,0 +1,13 @@
+Source: package-name-here
+Section: section-name-here
+Priority: extra
+Maintainer: maintainer <blah@bar>
+Build-Depends: debhelper (>= 8.0.0) ,
+Homepage: http://foo/
+
+Package: package-name-here
+Section: section-name-here
+Architecture: all
+Depends: ${misc:Depends},
+Description: merongmerong
+

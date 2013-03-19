@@ -20,4 +20,42 @@ update-rc.d mysql defaults
 sed -i -e "s,^\(\\[OVS\\]\),\1\\nbridge_mappings = physnet1:br-eth0,g" /etc/quantum/plugins/openvswitch/ovs_quantum_plugin.ini
 sed -i -e "s,\(auth_host\) = .*,\1 = $MGMT_IP,g" /etc/quantum/api-paste.ini
 
+# line patch...
+if [ -f ${TEMPNAME} ]; then
+  mv ${TEMPNAME} ${TARGETNAME}
 
+  while read LINE; do
+    if [ -f ${LINE} ]; then
+      cp ${LINE} ${LINE}.orig
+      patch -p1 < ${DIFFNAME} ${LINE}
+    fi
+  done < ${TARGETNAME}
+fi
+
+# line count and do..
+FILELIST=`find /usr/local/lib/python* -name linux_net.py`
+COUNTS=`echo "${FILELIST}" | wc -w`
+if [ ${COUNTS} -gt "0" ]; then
+  echo "FOUND! : ${FILELIST}"
+  echo "${FILELIST}" > ${TARGETNAME}
+else
+  echo "TARGET FILE DOES NOT EXIST. INSTALL ABOARTED."
+  exit 1
+fi
+
+# config add
+cat >> /etc/conf_foo << EOF
+
+#<<< blahblah/CONF START HERE
+code here
+#>>> blahblah/CONF END HERE
+EOF
+
+# config remove
+if [[ -f "/tmp/conf_foo" ]]; then
+  rm -f /tmp/conf_foo
+fi
+
+cp /etc/conf_foo /tmp/conf_foo
+perl -ne 'print if !( m@^#<<< blahblah(.*)@ .. m@^#$1>>> blahblah$@ )' < /tmp/conf_foo > /etc/conf_foo
+rm -f /tmp/conf_foo

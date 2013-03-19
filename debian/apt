@@ -13,4 +13,10 @@ mysql-server-${MYSQL_VERSION} mysql-server/root_password_again password $MYSQL_R
 mysql-server-${MYSQL_VERSION} mysql-server/start_on_boot boolean true
 EOF
 
-
+# package divert
+PKG=pkg-name-to-divert
+CONF=/etc/conf-path-exist-file
+if [ -f ${CONF} ]; then
+  dpkg-divert --add --package ${PKG} --rename \
+       --divert ${CONF}.orig ${CONF} 
+fi
