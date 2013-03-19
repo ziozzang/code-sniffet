@@ -1,0 +1,20 @@
+defutf8 on
+
+defflow off
+
+autodetach on
+
+vbell off
+
+shell -$SHELL
+
+setenv DISPLAY ':0'
+
+altscreen on
+
+#backtick 1 5 5 /root/bin/showapm
+termcapinfo xterm* ti@:te@
+
+
+caption always "%{=b}%{G} %{= kw}%-w%{= BW}%n %t%{-}%+w %-= %1` %m/%d/%y %C%a"
+

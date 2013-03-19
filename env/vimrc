@@ -1,0 +1,81 @@
+set laststatus=2
+set statusline=%<%F%h%m%r%h%w%y\ %{strftime(\"%Y/%m/%d-%H:%M\")}%=\ col:%c%V\ ascii:%b\ pos:%o\ lin:%l\,%L\ %P
+
+set nocp
+
+" 태그 돌아오기
+nnoremap <F7> <C-t>
+" 태그 가기
+nnoremap <F8> <C-]>
+" 태그 목록
+nnoremap <F9> g]
+nnoremap <C-F9> :TlistToggle<CR>
+
+" 코드 폴딩/언폴딩
+nnoremap <F5> zc
+nnoremap <C-F5> zo
+
+" 탭 생성 -> 이동
+nnoremap <F6> :tabnew<CR>
+nnoremap <C-F6> gT
+
+
+
+" 키 리맵
+
+"" block - char
+nnoremap <F3> v
+"" block - line
+nnoremap <C-F3> V
+
+"" block - find
+nnoremap <C-c> y
+"" block paste
+nnoremap <C-v> p
+"" block delete
+nnoremap <C-d> x
+"" save
+nnoremap <C-s> :w<CR>
+"" Quit
+nnoremap <C-q> :q<CR>
+
+
+
+
+"" new windows..
+nnoremap <C-n> :split<CR>:o .<CR>
+
+" 태그 설정
+set tags=./tags,../tags,../../tags,../../../tags,../../../../tags,../../../../../tags,../../../../../../tags,../../../../../../../tags,../../../../../../../../tags,../../../../../../../../../tags,~/tags
+
+filetype plugin on " 파일 종류 자동 인식
+filetype indent on
+
+
+set showmatch           " 대치 되는 괄호 보여 주기
+
+set hlsearch  " 검색어 구문 강조
+
+" =======================================================================
+
+if has("autocmd")
+  " 저장
+  "autocmd FileType * map <F12> :w<CR>
+
+ " Python 설정
+     autocmd BufNewFile,BufRead *.py setfiletype python
+     autocmd BufNewFile *.py 0r ~/.vim/templetes/skeleton.py
+     autocmd FileType python set syntax=python
+     autocmd FileType python set autoindent
+     "### Folding...
+     "autocmd FileType python set foldmethod=indent
+
+     "autocmd FileType python       set complete+=k~/.vim/syntax/python.vim isk+=.,(
+     "autocmd FileType python noremap <F12> :w<CR>:!python %<CR>
+     "autocmd FileType python noremap <C-F12> :w<CR>:!python %
+
+endif
+colorscheme evening
+set hlsearch
+set ignorecase
+set showmatch

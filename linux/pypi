@@ -1,0 +1,6 @@
+# set pypi mirror (at account)
+cat << EOF > ~/.pip/pip.conf
+[global]
+index-url = http://host/pypi/simple/
+EOF
+

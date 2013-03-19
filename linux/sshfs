@@ -1,0 +1,1 @@
+sshfs account@server:/path /target/

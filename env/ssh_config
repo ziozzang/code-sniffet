@@ -1,0 +1,6 @@
+StrictHostKeyChecking no
+
+Host host-*
+        StrictHostKeyChecking no
+        User user_name
+        IdentityFile ~/.ssh/key_file

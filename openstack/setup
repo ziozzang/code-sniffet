@@ -9,4 +9,22 @@ if [[ -f "glance/tools/pip-requires" ]]; then
 fi
 (cd glance; python ./setup.py install)
 
+# disk image mount
+tmpmntptr=$(mktemp --directory --tmpdir=. tmp.XXXXXXXXX)
+mount -o loop $tmpdir/${VM_IMAGE_NAME}.img $cwkdir/$tmpmntptr
+# -- Fixing images start here... --
+echo "auto eth1" >> $tmpmntptr/etc/network/interfaces
+echo "iface eth1 inet dhcp" >> $tmpmntptr/etc/network/interfaces
+# -- Fixing images end here... --
+umount $cwkdir/$tmpmntptr
+rm -rf $tmpmntptr 2> /dev/null
+
+# Add to glance
+GLANCE_OPT="-I $ADMIN -K $PASSWD -T $ADMIN_TENANT_NAME -N http://$MGMT_IP:35357/v2.0"
+glance $GLANCE_OPT image-create --name "${VM_IMAGE_NAME}-kernel" --is-public true --container-format aki --disk-format aki < $tmpdir/${VM_IMAGE_NAME}-vmlinuz-virtual
+KERNEL_ID=$(glance $GLANCE_OPT image-list | grep -m 1 "${VM_IMAGE_NAME}-kernel " | awk "{print \$2}")
+
+glance $GLANCE_OPT image-create --name "${VM_IMAGE_NAME}" --is-public true --container-format ami --disk-format ami --property kernel_id=$KERNEL_ID < $tmpdir/${VM_IMAGE_NAME}.img
+IMAGE_ID=$(glance $GLANCE_OPT image-list | grep -m 1 "${VM_IMAGE_NAME} " | awk "{print \$2}")
+
 

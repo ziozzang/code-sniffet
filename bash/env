@@ -32,6 +32,9 @@ if [ -f ${TEMPNAME} ]; then
   done < ${TARGETNAME}
 fi
 
+# replace
+find . -type f -name "blah" -exec perl -pi -e 's/src/dest/g' {} \;
+
 # line count and do..
 FILELIST=`find /usr/local/lib/python* -name linux_net.py`
 COUNTS=`echo "${FILELIST}" | wc -w`
