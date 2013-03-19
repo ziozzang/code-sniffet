@@ -1,0 +1,23 @@
+#!/bin/bash -x
+if [[ -f "envupdater.env" ]]; then
+  . envupdater.env
+fi
+
+MGMT_IFACE_IP=`python /root/envupdater/getipaddr.py -i ${MGMT_IFACE}`
+
+iptables -t nat -N PORT-PROXY-PREROUTING
+iptables -t nat -A PREROUTING -j PORT-PROXY-PREROUTING
+iptables -t filter -N PORT-PROXY-INPUT
+iptables -t filter -A INPUT -j PORT-PROXY-INPUT
+
+iptables -t nat -A PORT-PROXY-PREROUTING -d 169.254.169.254/32 -p tcp -m tcp --dport 3839 -j DNAT --to-destination ${MGMT_IFACE_IP}:13839
+iptables -t filter -A PORT-PROXY-INPUT -d ${MGMT_IFACE_IP}/32 -p tcp -m tcp --dport 13839 -j ACCEPT
+
+iptables -t nat -A PORT-PROXY-PREROUTING -d 169.254.169.254/32 -p tcp -m tcp --dport 3901 -j DNAT --to-destination ${MGMT_IFACE_IP}:13901
+iptables -t filter -A PORT-PROXY-INPUT -d ${MGMT_IFACE_IP}/32 -p tcp -m tcp --dport 13901 -j ACCEPT
+
+iptables -t nat -A PORT-PROXY-PREROUTING -d 169.254.169.254/32 -p tcp -m tcp --dport 3902 -j DNAT --to-destination ${MGMT_IFACE_IP}:13902
+iptables -t filter -A PORT-PROXY-INPUT -d ${MGMT_IFACE_IP}/32 -p tcp -m tcp --dport 13902 -j ACCEPT
+
+
+service port-proxy start

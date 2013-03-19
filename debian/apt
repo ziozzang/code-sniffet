@@ -1,0 +1,16 @@
+# install apt install
+function forced_apt_get {
+  sudo DEBIAN_FRONTEND=noninteractive apt-get \
+    --option "Dpkg::Options::=--force-confold" --assume-yes "$@"
+}
+# usage: git_clone $DEVSTACK_REPO devstack $DEVSTACK_BRANCH
+
+# debian conf selections
+MYSQL_VERSION=$(apt-cache show mysql-server | grep ^Source | uniq  | cut -d- -f2)
+cat <<EOF | debconf-set-selections
+mysql-server-${MYSQL_VERSION} mysql-server/root_password password $MYSQL_ROOT_PASSWD
+mysql-server-${MYSQL_VERSION} mysql-server/root_password_again password $MYSQL_ROOT_PASSWD
+mysql-server-${MYSQL_VERSION} mysql-server/start_on_boot boolean true
+EOF
+
+

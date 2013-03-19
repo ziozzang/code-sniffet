@@ -1,0 +1,10 @@
+pxelinux.cfg/default
+
+#System must boot HDD only..
+prompt 0
+default boothdd
+
+LABEL boothdd
+  MENU DEFAULT
+  localboot 0
+

@@ -1,0 +1,9 @@
+pxelinux.cfg/default
+
+#System must shutdown...
+prompt 0
+default shutdown
+
+LABEL shutdown
+  MENU DEFAULT
+    COMBOOT poweroff.com

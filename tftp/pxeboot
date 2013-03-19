@@ -1,0 +1,13 @@
+prompt 0
+timeout 0
+
+default 12.04-amd64-virt-host
+
+LABEL 12.04-amd64-virt-host
+        MENU LABEL Auto Ubuntu 12.04 virtual host (64-bit)
+        TEXT HELP
+        Automatic installation using preseed. Please tab to set hostname.
+        ENDTEXT
+        KERNEL linux
+        APPEND initrd=initrd.gz auto url=http://1.2.3.4:80/preseed.file locale=en_US console-setup/ask_detect=false debian-installer/keymap=us netcfg/choose_interface=eth2 netcfg/get_hostname=ubuntu
+

@@ -1,0 +1,12 @@
+# set PIP mirror URL
+export PIP_INDEX_URL=${PIP_MIRROR}
+pip install --use-mirrors jsonschema passlib httplib2
+
+# install...
+git_clone $GLANCE_REPO glance $GLANCE_BRANCH;
+if [[ -f "glance/tools/pip-requires" ]]; then
+  (PIP_DOWNLOAD_CACHE=/var/cache/pip pip install --use-mirrors -r glance/tools/pip-requires)
+fi
+(cd glance; python ./setup.py install)
+
+

@@ -1,0 +1,16 @@
+# git clone
+
+function git_clone {
+  local REMOTE=$1
+  local DEST=$2
+  local BRANCH=$3
+
+  # Removes the directory first.
+  rm -rf $DEST 2> /dev/null || true
+
+  # Clones and changes to the branch.
+  git clone $REMOTE $DEST
+  (cd $DEST; git checkout $BRANCH)
+}
+
+

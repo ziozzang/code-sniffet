@@ -1,0 +1,114 @@
+# BOOTP/DHCP 프로토콜 설명
+# CIADDR: 클라이언트가 기존 IP가 있고 계속 쓰고 싶은 경우에는 여기에 실어보냄
+# YIADDR: 서버가 클라이언트에게 할당할 IP 주소
+#         만일 CIADDR 에 명시되어 날아왔는데 응답된 YIADDR 이 다른 경우에는
+#         RFC1542 에 의거하여 YIADDR이 무시됨
+# SIADDR: 서버의 IP.
+#         BOOTP 의 경우에는> BOOTREPLY 메시지를 전송 하는 머신의 IP
+#         DHCP의 경우에는> 다음 Phase에서 사용할 서버 IP. 응답하는 서버의 IP는
+#           Server Identifier 로 명시 해주도록 한다.
+# GIADDR: 게이트웨이 IP. 하지만 이건 IP 라우팅 용도의 GW IP가 아님.
+#         BOOTP의 중계용 라우터임.
+# CHADDR: 클라이언트 MAC Address
+# SNAME: 도메인 또는 서버 이름. 만일 클라이언트에서 이부분을 명시 하는 경우,
+#        해당 이름의 서버에서 응답을 받겠다는 설정이 됨.
+
+(BOOTP_OP, BOOTP_HTYPE, BOOTP_HLEN, BOOTP_HOPS, BOOTP_XID, BOOTP_SECS,
+ BOOTP_FLAGS, BOOTP_CIADDR, BOOTP_YIADDR, BOOTP_SIADDR, BOOTP_GIADDR,
+ BOOTP_CHADDR, BOOTP_SNAME, BOOTP_FILE, BOOTP_VEND) = range(15)
+
+DHCP_OPTIONS = {0: 'Byte padding',
+          1: 'Subnet mask',
+          2: 'Time offset',
+          3: 'Routers',  # 클라이언트가 사용할 라우터를 나열.
+          4: 'Time servers',  # 클라이언트각 사용할 타임서버를 나열
+          5: 'Name servers',  # IEN-116 네임서버(not DNS)
+          6: 'Domain name servers',  # DNS Server
+          7: 'Log servers',  # MIT-LCS UDP log 서버
+          8: 'Cookie servers',  # RFC865 쿠키 서버
+          9: 'Line printer servers',  # RFC1179 도트 라인 프린터 서버
+         10: 'Impress servers',
+         11: 'Resource location servers',
+         12: 'Host Name',  # + PXE extensions
+         13: 'Boot file size',  # 부팅에 사용할 파일의 크기.
+         14: 'Dump file',
+         15: 'Domain name',  # 클라이언트의 DNS 이름
+         16: 'Swap server',
+         17: 'Root path',  # 루트 경로. 클라이언트 접근시 prefix로 동작
+         18: 'Extensions path',
+         # --- IP layer / host ---
+         19: 'IP forwarding',  # IP포워딩을 켜거나 끔.
+         20: 'Source routing',  # 로컬이 아닌 소스의 라우팅 여부를 설정
+         21: 'Policy filter',
+         22: 'Maximum datagram reassembly size',
+         23: 'Default IP TTL',
+         24: 'Path MTU aging timeout',
+         25: 'Path MTU plateau table',
+         # --- IP Layer / interface ---
+         26: 'Interface MTU',  # MTU 설정
+         27: 'All subnets local',
+         28: 'Broadcast address',  # 브로드캐스트에 사용할 IP주소
+         29: 'Perform mask discovery',
+         30: 'Mask supplier',
+         31: 'Perform router discovery',
+         32: 'Router solicitation address',
+         33: 'Static route',  # 스태틱 라우트 목록 ((DEST),(ROUTER))...
+         # --- Link layer ---
+         34: 'Trailer encapsulation',
+         35: 'ARP cache timeout',  # ARP 캐시 유지 시간 설정(sec)
+         36: 'Ethernet encaspulation',
+         # --- TCP ---
+         37: 'TCP default TTL',
+         38: 'TCP keepalive interval',
+         39: 'TCP keepalive garbage',
+         # --- Application & Services ---
+         40: 'Network Information Service domain',  # NIS 도메인 설정
+         41: 'Network Information servers',  # NIS 서버 목록
+         42: 'Network Time Protocol servers',  # NTP 서버 목록
+         43: 'Vendor specific',
+         44: 'NetBIOS over TCP/IP name server',
+         45: 'NetBIOS over TCP/IP datagram server',
+         46: 'NetBIOS over TCP/IP node type',
+         47: 'NetBIOS over TCP/IP scope',
+         48: 'X Window system font server',
+         49: 'X Window system display manager',
+         50: 'Requested IP address',  # 클라이언트가 특정 IP를 요청할때 IP
+         51: 'IP address lease time',  # DHCP IP임대 기간(sec)
+         52: 'Option overload',  # SNAME 필드를 옵션데이터를 쓸경우 1
+               # 해당 부분을 따로 옵션데이터로 쓰는 이유는 UDP 패킷사이즈이슈
+         53: 'DHCP message',
+         54: 'Server ID',  # DHCP 정보를 보내는 서버의 IP
+         55: 'Param request list',
+         56: 'Error message',
+         57: 'Message length',
+         58: 'Renewal time',
+         59: 'Rebinding time',
+         60: 'Class ID',
+         61: 'GUID',  # DHCP 서버 입장에서 클라이언트에 대한 GUID
+         64: 'Network Information Service+ domain',
+         65: 'Network Information Service+ servers',
+         66: 'TFTP server name',  # TFTP 서버의 이름(IP/domain)
+         67: 'Bootfile name',  # Boot File 이름
+         68: 'Mobile IP home agent',
+         69: 'Simple Mail Transport Protocol servers',
+         70: 'Post Office Protocol servers',
+         71: 'Network News Transport Protocol servers',
+         72: 'World Wide Web servers',
+         73: 'Finger servers',
+         74: 'Internet Relay Chat server',
+         93: 'System architecture',
+         94: 'Network type',
+         97: 'UUID',
+         255: 'End of DHCP options'}
+
+DHCP_DISCOVER = 1  # C->S: DHCP서버 요청
+DHCP_OFFER = 2     # S->C: DHCP정보를 클라이언트에게 제안
+DHCP_REQUEST = 3   # C->S: DHCP정보중 맘에드는것을 사용 요청
+DHCP_DECLINE = 4   # C->S: DHCP정보를 서버에 거절
+                   #       IP가 이미 사용중인 경우(ARP) 서버 통보
+DHCP_ACK = 5       # S->C: 해당 DHCP정보가 수락 통보
+DHCP_NAK = 6       # S->C: 해당 DHCP정보를 사용불가 통보
+DHCP_RELEASE = 7   # C->S: 임대를 종료하고 싶은경우
+DHCP_INFORM = 8    # C->S: 네트워크 설정정보를 요청
+DHCP_RENEWING = 100
+

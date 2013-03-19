@@ -1,0 +1,7 @@
+# route add /delete
+
+route add -host ${IPADDR} ${PRIVATE_IFACE_ON_VM}
+route add -net ${IPBLOCK} netmask ${NETMASK} gw ${IPADDR} ${PRIVATE_IFACE_ON_VM}
+
+route del -host ${IPADDR} ${PRIVATE_IFACE_ON_VM}
+route del -net ${IPBLOCK} netmask ${NETMASK} gw ${IPADDR} ${PRIVATE_IFACE_ON_VM}

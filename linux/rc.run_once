@@ -1,0 +1,20 @@
+#!/bin/bash
+cd /root/bootup
+CNT=`ls *.sh 2> /dev/null | wc -l`
+if [[ "$CNT" -ne "0" ]]; then
+  for f in *;
+  do
+    bash $f
+  done
+fi
+
+##################
+# add run_once...
+if [[ ! "$(grep '^/etc/rc.run_once' /etc/rc.local)" ]]; then
+  sed -i -e "s,\(^exit .*\),/etc/rc.run_once\n\1," /etc/rc.local
+fi
+
+mv rc.run_once /etc/rc.run_once
+chown root /etc/rc.run_once
+chmod u+rwx,og-rwx /etc/rc.run_once
+

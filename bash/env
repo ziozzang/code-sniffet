@@ -1,0 +1,23 @@
+# set envs
+TESTB=${TESTB:-"default"}
+
+# address get
+PRIVATE_INTERFACE=${PRIVATE_INTERFACE:-"eth1"}
+PRIVATE_IP=$(/sbin/ifconfig $PRIVATE_INTERFACE | grep -m 1 'inet addr:' \
+          | cut -d: -f2 | awk '{print $1}')
+
+# root account blocker
+[[ "$(id -u)" -eq 0 ]] || (echo "FATAL: Root privilege is required."; exit 1)
+
+# current dir
+DIRNAME=$(readlink -f $(dirname $0))
+
+# set start-up project
+update-rc.d -f mysql remove || true
+update-rc.d mysql defaults
+
+# replace string in file
+sed -i -e "s,^\(\\[OVS\\]\),\1\\nbridge_mappings = physnet1:br-eth0,g" /etc/quantum/plugins/openvswitch/ovs_quantum_plugin.ini
+sed -i -e "s,\(auth_host\) = .*,\1 = $MGMT_IP,g" /etc/quantum/api-paste.ini
+
+
