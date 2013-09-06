@@ -130,7 +130,8 @@ class Dict2XML(object):
             return str(d)
 
         elif isinstance(d, basestring):
-            return '<![CDATA[%s]]>' % d
+            return '%s' % d
+            #return '<![CDATA[%s]]>' % d
 
         elif isinstance(d, dict):
             x = []
