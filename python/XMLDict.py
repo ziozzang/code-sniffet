@@ -103,7 +103,7 @@ class XML2Dict(object):
 class Dict2XML(object):
     """Turn a dictionary into an XML string."""
 
-    def tostring(self, d):
+    def tostring(self, d, wrap=False):
         """Convert dictionary to an XML string."""
         if not isinstance(d, dict):
             raise TypeError('tostring must receive a dictionary: %r' % d)
@@ -114,7 +114,16 @@ class Dict2XML(object):
 
         xml_list = ['<?xml version="1.0" encoding="UTF-8" ?>\n']
         xml_list.append(self.__tostring_helper(d))
-        return ''.join(xml_list)
+        res = ''.join(xml_list)
+
+        if wrap:
+            res = res.encode("UTF-8")
+            res = xml.dom.minidom.parseString(res).toprettyxml().\
+                  replace(u'<?xml version="1.0" ?>',
+                          u'<?xml version="1.0" encoding="UTF-8"?>')
+            text_re = re.compile('>\n\s+([^<>\s].*?)\n\s+</', re.DOTALL)
+            res = text_re.sub('>\g<1></', res)
+        return res
 
     def __tostring_helper(self, d):
         if isinstance(d, int):
