@@ -1,0 +1,3 @@
+
+echo "ziozzang ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/ziozzang
+chmod 0440 /etc/sudoers.d/ziozzang
