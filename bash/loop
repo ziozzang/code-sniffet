@@ -1,0 +1,13 @@
+#!/bin/bash
+
+
+CNT=`ls /tmp/asdf 2> /dev/null | wc -l`
+
+while [ $CNT -eq 0 ]
+do
+  echo "not exist"
+  sleep 3
+  CNT=`ls /tmp/asdf 2> /dev/null | wc -l`
+done
+
+echo "find!"
