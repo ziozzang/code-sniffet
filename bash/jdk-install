@@ -40,7 +40,7 @@ tar -xzvf $TMPFILE
 # Get DirPath & Move Files
 VERDIR=`ls -Ad */ | head -n 1`
 mkdir -p ${JAVA_TOP}
-mv -rf $VERDIR ${JAVA_TOP}/
+mv -f $VERDIR ${JAVA_TOP}/
 cd $JAVA_TOP
 
 # Rebuild JDK HOME path
