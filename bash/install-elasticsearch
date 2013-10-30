@@ -6,8 +6,18 @@
 
 # Check Java Exist.
 if [ ! -f "/usr/bin/java" ]; then
-
+  echo "HELLO!"
 fi
 
-# From Page : view-source:http://www.elasticsearch.org/download/
-# https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.90.5.deb
+# Get Newest Version of Elastic Search File (deb file)
+DN_PAGE="http://www.elasticsearch.org/download/"
+ES_PREPATH="https://download.elasticsearch.org/[^\"]*.deb"
+ES_PATH=`wget -qO- $DN_PAGE | grep -o $ES_PREPATH | head -n 1`
+
+# Fetch File
+TMPFILE=$(mktemp /tmp/XXXXXXXX.deb)
+rm -f $TMPFILE
+wget -N -c ${ES_PATH} -O $TMPFILE
+
+# Install Package
+dpkg -ivf $TMPFILE
