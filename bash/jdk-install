@@ -4,6 +4,12 @@
 #  - Code by Jioh L. Jung (ziozzang@gmail.com)
 #
 
+# Envs.
+JAVA_TOP="/usr/lib/jvm"
+
+# Prepare
+CDIR=`pwd`
+
 # Get Newest Version from Oracle JDK download Page
 DNPG="http://www.oracle.com/technetwork/java/javase/downloads/index.html"
 NEWVER=`wget -qO- ${DNPG} | grep -o "<h3 id=\"javasejdk\">\([^<$]*\)</h3>" | cut -d ">" -f 2 | cut -d "<" -f 1 | tr ' ' '\n' | tail -n 1`
@@ -14,7 +20,7 @@ if [ `uname -m` == "x86_64" ]; then
 fi
 
 # Get Download Page
-ORADNPG=`wget -qO- ${DNPG} | grep -o "/technetwork/java/javase/downloads/jdk7-downloads[^\"]*.html" | head -n 1`
+ORADNPG=`wget -qO- ${DNPG} | grep -o "/technetwork/java/javase/downloads/jdk[0-9]*-downloads[^\"]*.html" | head -n 1`
 ORADNURL="http://www.oracle.com${ORADNPG}"
 
 # Get Full URL.
@@ -23,7 +29,27 @@ JDK_PATH=`wget -qO- $ORADNURL | grep -o $JDK_PREPATH`
 
 # Fetch File
 TMPFILE=`mktemp`
+TMPDIR=$(mktemp --directory --tmpdir=/tmp/ tmp.XXXXXXXXX)
 rm -f $TMPFILE
 wget -N -c --no-cookies --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F" ${JDK_PATH} -O $TMPFILE
 
+# untar to tmpdir
+cd $TMPDIR
+tar -xzvf $TMPFILE
 
+# Get DirPath & Move Files
+VERDIR=`ls -Ad */ | head -n 1`
+mkdir -p ${JAVA_TOP}
+mv $VERDIR ${JAVA_TOP}/
+
+# Remove Temporary
+cd $CDIR
+rm -rf $TMPDIR
+rm -f $TMPFILE
+
+# Update Alternatives
+update-alternatives --install /usr/bin/java java ${JAVA_TOP}/${VERDIR}/bin/java 1065
+update-alternatives --install /usr/bin/javac javac ${JAVA_TOP}/${VERDIR}/bin/javac 1065
+
+# Show Java Version
+java -version
