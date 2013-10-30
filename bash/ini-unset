@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+# ini file  configure update script.
+#
+# - code by Jioh L. Jung (ziozzang@gmail.com)
+#
+
+if [ "$#" -lt "2" ]; then
+  echo "Usage:\n # $0 file key"
+
+else
+  FILE_NAME="$1"
+  PARAM="$2"
+  sed -i -e "s,^\(${PARAM}\),#\1," ${FILE_NAME}
+fi
