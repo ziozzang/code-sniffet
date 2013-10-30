@@ -1,0 +1,13 @@
+#!/bin/bash
+#
+# Elastic Search Automatically Install Script. (Debian/Ubuntu)
+#  - Code by Jioh L. Jung (ziozzang@gmail.com)
+#
+
+# Check Java Exist.
+if [ ! -f "/usr/bin/java" ]; then
+
+fi
+
+# From Page : view-source:http://www.elasticsearch.org/download/
+# https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.90.5.deb
