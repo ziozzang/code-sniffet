@@ -41,6 +41,19 @@ tar -xzvf $TMPFILE
 VERDIR=`ls -Ad */ | head -n 1`
 mkdir -p ${JAVA_TOP}
 mv $VERDIR ${JAVA_TOP}/
+cd $JAVA_TOP
+
+# Rebuild JDK HOME path
+rm -f default-java
+ln -s $VERDIR default-java
+declare -x JAVA_HOME="${JAVA_TOP}/${VERDIR}"
+CNT=`grep JAVA_HOME /etc/bash.bashrc | wc -l`
+if [ $CNT -eq "0" ]; then
+  cat >> /etc/bash.bashrc << EOF
+export JAVA_HOME="${JAVA_TOP}/${VERDIR}"
+export JAVA_PATH="\$JAVA_HOME"
+EOF
+fi
 
 # Remove Temporary
 cd $CDIR
@@ -50,6 +63,7 @@ rm -f $TMPFILE
 # Update Alternatives
 update-alternatives --install /usr/bin/java java ${JAVA_TOP}/${VERDIR}/bin/java 1065
 update-alternatives --install /usr/bin/javac javac ${JAVA_TOP}/${VERDIR}/bin/javac 1065
+update-alternatives --install /usr/bin/jar jar ${JAVA_TOP}/${VERDIR}/bin/jar 1065
 
 # Show Java Version
 java -version
