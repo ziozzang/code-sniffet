@@ -1,15 +1,29 @@
 #!/bin/bash
+#
+# Oracle JDK Automatically Install Script.
+#  - Code by Jioh L. Jung (ziozzang@gmail.com)
+#
 
-ORACLE_PAGE="http://www.oracle.com/technetwork/java/javase/downloads/index.html"
-ORAVER=`wget -qO- $ORACLE_PAGE | grep -o "<h3 id=\"javasejdk\">\([^<$]*\)</h3>" | cut -d ">" -f 2 | cut -d "<" -f 1 | tr ' ' '\n' | tail -n 1`
+# Get Newest Version from Oracle JDK download Page
+DNPG="http://www.oracle.com/technetwork/java/javase/downloads/index.html"
+NEWVER=`wget -qO- ${DNPG} | grep -o "<h3 id=\"javasejdk\">\([^<$]*\)</h3>" | cut -d ">" -f 2 | cut -d "<" -f 1 | tr ' ' '\n' | tail -n 1`
 
 SYSARCH="i586"
 if [ `uname -m` == "x86_64" ]; then
   SYSARCH="x64"
 fi
 
-ORADNPG=`wget -qO- $ORACLE_PAGE | grep -o "/technetwork/java/javase/downloads/jdk7-downloads[^\"]*.html" | head -n 1`
+# Get Download Page
+ORADNPG=`wget -qO- ${DNPG} | grep -o "/technetwork/java/javase/downloads/jdk7-downloads[^\"]*.html" | head -n 1`
 ORADNURL="http://www.oracle.com${ORADNPG}"
-JDK_PREPATH="http://download.oracle.com/otn-pub/java/jdk/${ORAVER}-[^\"]*/jdk-${ORAVER}-linux-${SYSARCH}.tar.gz"
+
+# Get Full URL.
+JDK_PREPATH="http://download.oracle.com/otn-pub/java/jdk/${NEWVER}-[^\"]*/jdk-${NEWVER}-linux-${SYSARCH}.tar.gz"
 JDK_PATH=`wget -qO- $ORADNURL | grep -o $JDK_PREPATH`
-wget -N -c --no-cookies --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F" ${JDK_PATH} -O /tmp/tmp_jdk.tar.gz`
+
+# Fetch File
+TMPFILE=`mktemp`
+rm -f $TMPFILE
+wget -N -c --no-cookies --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F" ${JDK_PATH} -O $TMPFILE
+
+
