@@ -39,7 +39,7 @@ for i in f.splitlines(True):
   else:
     # Section
     sn = i.split("#")[0].strip()
-    if sn.lower() == sys.argv[1].lower():
+    if sn.replace("\t"," ").lower() == sys.argv[1].replace("\t"," ").lower():
       # Same Section
       ssf = True
     elif ssf and (wrf == False):
