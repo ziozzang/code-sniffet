@@ -1,0 +1,38 @@
+#!/usr/bin/python
+
+import sys
+
+ssf = False
+
+
+if len(sys.argv) < 3:
+  print "Usage :\n # %s section key ...." % sys.argv[0]
+  exit(0)
+
+f = open("/etc/haproxy/haproxy.cfg","r").read()
+t = open("/etc/haproxy/haproxy.cfg.tmp","w")
+for i in f.splitlines(True):
+  if len(i.strip()) == 0:
+    # Blank lines
+    t.write(i)
+  elif i.strip()[0] == "#":
+    # Comment
+    t.write(i)
+  elif i[0].isspace():
+    # Inner Section
+    if ssf:
+      # Only for matched section
+      k = i.strip().split()[0]
+      if sys.argv[2].lower() == k.lower():
+        # matched key
+        continue
+    t.write(i)
+  else:
+    # Section
+    sn = i.split("#")[0].strip()
+    if sn.lower().replace("\t"," ") == sys.argv[1].lower().replace("\t", " "):
+      # Same Section
+      ssf = True
+    else:
+      ssf = False
+    t.write(i)
