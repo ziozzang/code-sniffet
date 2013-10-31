@@ -8,6 +8,21 @@
 
 import sys
 
+def parse_argv(p):
+  f = False
+  o = []
+  q = []
+  q.append(p[0])
+  for i in p[1:]:
+    if not f:
+      if i[:2] == "--":
+        o.append(i[2:])
+      else:
+        f = True
+        q.append(i)
+    else:
+      q.append(i)
+  return (q,o)
 
 def get_kv(lo):
   p = lo.find("=")
@@ -19,8 +34,9 @@ def get_kv(lo):
 
 
 if __name__ == '__main__':
+  sys.argv , opt = parse_argv(sys.argv)
   if len(sys.argv) != 4:
-    print "Usage:\n # %s file key value" % sys.argv[0]
+    print "Usage:\n # %s (options...) file key value" % sys.argv[0]
     exit(0)
 
   FILE_NAME = sys.argv[1]
