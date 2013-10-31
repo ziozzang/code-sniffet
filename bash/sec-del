@@ -1,0 +1,31 @@
+#!/usr/bin/python
+
+import sys
+
+ssf = False
+wrf = False
+wcf = False
+f = open("/etc/haproxy/haproxy.cfg","r").read()
+t = open("/etc/haproxy/haproxy.cfg.tmp","w")
+for i in f.splitlines(True):
+  if len(i.strip()) == 0:
+    # Blank lines
+    t.write(i)
+  elif i.strip()[0] == "#":
+    # Comment
+    t.write(i)
+  elif i[0].isspace():
+    # Inner Section
+    if ssf:
+      continue
+    t.write(i)
+  else:
+    # Section
+    sn = i.split("#")[0].strip()
+    if sn.lower() == sys.argv[1].lower():
+      # Same Section
+      ssf = True
+      continue
+    else:
+      ssf = False
+    t.write(i)
