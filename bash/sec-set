@@ -5,6 +5,16 @@ import sys
 ssf = False
 wrf = False
 wcf = False
+
+
+
+ap = ""
+if len(sys.argv) < 3:
+  print "Usage :\n # %s section key values ...." % sys.argv[0]
+  exit(0)
+if len(sys.argv) > 3:
+  ap = " ".join(sys.argv[3:])
+
 f = open("/etc/haproxy/haproxy.cfg","r").read()
 t = open("/etc/haproxy/haproxy.cfg.tmp","w")
 for i in f.splitlines(True):
@@ -23,10 +33,7 @@ for i in f.splitlines(True):
         # matched key
         wrf = True
         wcf = True
-        t.write("\t%s\t" % sys.argv[2])
-        t.write(" ".join(sys.argv[3:]))
-        t.write("\n")
-        print "\t%s\t" % (sys.argv[2]) + " ".join(sys.argv[3:])
+        t.write("\t%s\t" % (sys.argv[2]) + ap + "\n")
         continue
     t.write(i)
   else:
@@ -38,11 +45,11 @@ for i in f.splitlines(True):
     elif ssf and (wrf == False):
       ssf = False
       wcf = True
-      t.write("\t%s\t" % (sys.argv[2]) + " ".join(sys.argv[3:]) + "\n" )
+      t.write("\t%s\t" % (sys.argv[2]) + ap + "\n")
     else:
       ssf = False
     t.write(i)
 
 if wcf == False:
   t.write("%s\n" % sys.argv[1])
-  t.write("\t%s\t" % (sys.argv[2]) + " ".join(sys.argv[3:]) + "\n")
+  t.write("\t%s\t" % (sys.argv[2]) + ap + "\n")
