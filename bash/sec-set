@@ -1,0 +1,48 @@
+#!/usr/bin/python
+
+import sys
+
+ssf = False
+wrf = False
+wcf = False
+f = open("/etc/haproxy/haproxy.cfg","r").read()
+t = open("/etc/haproxy/haproxy.cfg.tmp","w")
+for i in f.splitlines(True):
+  if len(i.strip()) == 0:
+    # Blank lines
+    t.write(i)
+  elif i.strip()[0] == "#":
+    # Comment
+    t.write(i)
+  elif i[0].isspace():
+    # Inner Section
+    if ssf:
+      # Only for matched section
+      k = i.strip().split()[0]
+      if sys.argv[2].lower() == k.lower():
+        # matched key
+        wrf = True
+        wcf = True
+        t.write("\t%s\t" % sys.argv[2])
+        t.write(" ".join(sys.argv[3:]))
+        t.write("\n")
+        print "\t%s\t" % (sys.argv[2]) + " ".join(sys.argv[3:])
+        continue
+    t.write(i)
+  else:
+    # Section
+    sn = i.split("#")[0].strip()
+    if sn.lower() == sys.argv[1].lower():
+      # Same Section
+      ssf = True
+    elif ssf and (wrf == False):
+      ssf = False
+      wcf = True
+      t.write("\t%s\t" % (sys.argv[2]) + " ".join(sys.argv[3:]) + "\n" )
+    else:
+      ssf = False
+    t.write(i)
+
+if wcf == False:
+  t.write("%s\n" % sys.argv[1])
+  t.write("\t%s\t" % (sys.argv[2]) + " ".join(sys.argv[3:]) + "\n")
