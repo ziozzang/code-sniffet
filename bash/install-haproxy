@@ -1,0 +1,6 @@
+#!/bin/bash
+
+apt-get install -fy haproxy python-pip
+pip install flask netaddr
+
+
