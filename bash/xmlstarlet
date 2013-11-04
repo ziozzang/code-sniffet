@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# http://www.ibm.com/developerworks/library/x-starlet/index.html
+apt-get install -fy xmlstarlet
+
+
