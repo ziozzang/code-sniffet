@@ -4,3 +4,38 @@
 apt-get install -fy xmlstarlet
 
 
+#!/usr/bin/python
+
+"xmlstarlet el -v asdf.xml"
+a = "Server/GlobalNamingResources/Resource[@name='UserDatabase' and @auth='Container' and @type='org.apache.catalina.UserDatabase' and @description='User database that can be updated and saved' and @factory='org.apache.catalina.users.MemoryUserDatabaseFactory' and @pathname='conf/tomcat-users.xml']"
+
+for i in q
+# 여러개가 있는 경우에만 카운트에 맞게 확인.
+
+
+def gen_append(a, v=""):
+  n = a[:a.find("[")]
+  m = n.rfind("/")
+  p = a[a.find("["):].strip("[]@").split(" and @")
+  s = "xmlstarlet ed -P -S -L -s /" + n[:m] + " -t elem -n ResourceTMP -v \"%s\" " % (v)
+  for i in p:
+    q = i.split("=",1)
+    s = s + "-i //ResourceTMP -t attr -n \"" + q[0] + "\" -v \"" + q[1].strip("'") + "\" "
+  s = s + "-r //ResourceTMP -v Resource server.xml"
+  return s
+
+xmlstarlet ed -P -S -L -s /Server/GlobalNamingResources -t elem -n ResourceTMP -v "" \
+    -i //ResourceTMP -t attr -n "name" -v "jdbc/templateassets" \
+    -i //ResourceTMP -t attr -n "auth" -v "Container" \
+    -i //ResourceTMP -t attr -n "type" -v "javax.sql.DataSource" \
+    -i //ResourceTMP -t attr -n "driverClassName" -v "com.mysql.jdbc.Driver" \
+    -i //ResourceTMP -t attr -n "url" -v "jdbc:mysql://DBHOST:DBPORT/DBNAME?createDatabaseIfNotExist=false&useUnicode=true&characterEncoding=utf-8" \
+    -i //ResourceTMP -t attr -n "username" -v "DBUSER" \
+    -i //ResourceTMP -t attr -n "password" -v "DBPASS" \
+    -i //ResourceTMP -t attr -n "maxActive" -v "150" \
+    -i //ResourceTMP -t attr -n "maxIdle" -v "10" \
+    -i //ResourceTMP -t attr -n "initialSize" -v "10" \
+    -i //ResourceTMP -t attr -n "validationQuery" -v "SELECT 1" \
+    -i //ResourceTMP -t attr -n "testOnBorrow" -v "true" \
+    -r //ResourceTMP -v Resource \
+    server.xml
