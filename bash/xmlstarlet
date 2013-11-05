@@ -24,6 +24,19 @@ def gen_append(a, v=""):
   s = s + "-r //ResourceTMP -v Resource server.xml"
   return s
 
+def gen_nth_append(a, nth=0, v=""):
+  n = a[:a.find("[")]
+  m = n.rfind("/")
+  p = a[a.find("["):].strip("[]@").split(" and @")
+  s = "xmlstarlet ed -P -S -L -s /" + n[:m] + " -t elem -n ResourceTMP -v \"%s\" " % (v)
+  for i in p:
+    q = i.split("=",1)
+    s = s + "-i //ResourceTMP -t attr -n \"" + q[0] + "\" -v \"" + q[1].strip("'") + "\" "
+  s = s + "-r //ResourceTMP -v Resource server.xml"
+  return s
+
+
+
 xmlstarlet ed -P -S -L -s /Server/GlobalNamingResources -t elem -n ResourceTMP -v "" \
     -i //ResourceTMP -t attr -n "name" -v "jdbc/templateassets" \
     -i //ResourceTMP -t attr -n "auth" -v "Container" \
