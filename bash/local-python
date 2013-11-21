@@ -46,3 +46,7 @@ cd ${DPREFIX}/src/zlib-${ZLIBVER}
 mkdir -p ${DPREFIX}/external
 ./configure --prefix=${DPREFIX}/external
 make install
+
+# Mysql client build
+MSQLVER="6.1.2"
+wget http://dev.mysql.com/get/Downloads/Connector-C/mysql-connector-c-${MSQLVER}-src.tar.gz
