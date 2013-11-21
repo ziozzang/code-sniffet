@@ -1,7 +1,7 @@
 #!/bin/bash
 VERSTR="2.7.6"
 DPREFIX="${HOME}/python"
-sudo yum install -y gcc openssl-devel
+sudo yum install -y gcc openssl-devel zlib-devel
 mkdir -p ${DPREFIX}/src
 
 
