@@ -1,17 +1,41 @@
 VERSTR="2.7.6"
 DPREFIX="${HOME}/python"
-sudo yum install -y gcc
+sudo yum install -y gcc openssl-devel
 mkdir -p ${DPREFIX}/src
+
+# OpenSSL build
+SSLVER="1.0.1e"
 cd ${DPREFIX}/src
-wget http://www.python.org/ftp/python/${VERSTR}/Python-${VERSTR}.tgz
-cd Python-${VERSTR}
-./configure --prefix ${DPREFIX}
+wget http://www.openssl.org/source/openssl-${SSLVER}.tar.gz
+tar -xzvf openssl-${SSLVER}.tar.gz
+cd ${DPREFIX}/src/openssl-${SSLVER}
+mkdir -p ${DPREFIX}/external
+./config --prefix=${DPREFIX}/external
 make install
 
-# PIP
-PIPVER="1.4.1"
+# Zlib build
+ZLIBVER="1.2.8"
 cd ${DPREFIX}/src
-wget https://pypi.python.org/packages/source/p/pip/pip-${PIPVER}.tar.gz --no-check-certificate
-tar -xzvf pip-${PIPVER}.tar.gz
-cd pip-${PIPVER}
-${DPREFIX}/bin/python setup.py install
+http://zlib.net/zlib-${ZLIBVER}.tar.gz
+tar -xzvf zlib-${ZLIBVER}.tar.gz
+cd ${DPREFIX}/src/zlib-${ZLIBVER}
+mkdir -p ${DPREFIX}/external
+./configure --prefix=${DPREFIX}/external
+make install
+
+# Python Build
+cd ${DPREFIX}/src/
+wget http://www.python.org/ftp/python/${VERSTR}/Python-${VERSTR}.tgz
+tar -xzvf Python-${VERSTR}.tgz
+cd ${DPREFIX}/src/Python-${VERSTR}
+
+sed -i -e "s,\(inc_dirs\) = \[\],\1 = \['${DPREFIX}/external/include'\]," setup.py
+sed -i -e "s,\(lib_dirs\) = \[\],\1 = \['${DPREFIX}/external/lib'\]," setup.py
+env CPPFLAGS="-I${DPREFIX}/external" LDFLAGS="-L${DPREFIX}/external" ./configure --prefix ${DPREFIX}
+make install
+
+# easy_install install
+cd ${DPREFIX}/src
+wget http://peak.telecommunity.com/dist/ez_setup.py
+${DPREFIX}/bin/python ./ez_setup.py
+${DPREFIX}/bin/easy_install pip
