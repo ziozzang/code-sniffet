@@ -1,3 +1,4 @@
+#!/bin/bash
 VERSTR="2.7.6"
 DPREFIX="${HOME}/python"
 sudo yum install -y gcc openssl-devel
@@ -21,6 +22,8 @@ cd ${DPREFIX}/src
 wget http://peak.telecommunity.com/dist/ez_setup.py
 ${DPREFIX}/bin/python ./ez_setup.py
 ${DPREFIX}/bin/easy_install pip
+
+exit 0
 
 ==========
 #
