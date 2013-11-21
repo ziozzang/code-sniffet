@@ -3,6 +3,27 @@ DPREFIX="${HOME}/python"
 sudo yum install -y gcc openssl-devel
 mkdir -p ${DPREFIX}/src
 
+
+# Python Build
+cd ${DPREFIX}/src/
+wget http://www.python.org/ftp/python/${VERSTR}/Python-${VERSTR}.tgz
+tar -xzvf Python-${VERSTR}.tgz
+cd ${DPREFIX}/src/Python-${VERSTR}
+
+#sed -i -e "s,\(inc_dirs\) = \[\],\1 = \['${DPREFIX}/external/include'\]," setup.py
+#sed -i -e "s,\(lib_dirs\) = \[\],\1 = \['${DPREFIX}/external/lib'\]," setup.py
+#env CPPFLAGS="-I${DPREFIX}/external" LDFLAGS="-L${DPREFIX}/external" 
+./configure --prefix ${DPREFIX}
+make install
+
+# easy_install install
+cd ${DPREFIX}/src
+wget http://peak.telecommunity.com/dist/ez_setup.py
+${DPREFIX}/bin/python ./ez_setup.py
+${DPREFIX}/bin/easy_install pip
+
+==========
+#
 # OpenSSL build
 SSLVER="1.0.1e"
 cd ${DPREFIX}/src
@@ -16,26 +37,9 @@ make install
 # Zlib build
 ZLIBVER="1.2.8"
 cd ${DPREFIX}/src
-http://zlib.net/zlib-${ZLIBVER}.tar.gz
+wget http://zlib.net/zlib-${ZLIBVER}.tar.gz
 tar -xzvf zlib-${ZLIBVER}.tar.gz
 cd ${DPREFIX}/src/zlib-${ZLIBVER}
 mkdir -p ${DPREFIX}/external
 ./configure --prefix=${DPREFIX}/external
 make install
-
-# Python Build
-cd ${DPREFIX}/src/
-wget http://www.python.org/ftp/python/${VERSTR}/Python-${VERSTR}.tgz
-tar -xzvf Python-${VERSTR}.tgz
-cd ${DPREFIX}/src/Python-${VERSTR}
-
-sed -i -e "s,\(inc_dirs\) = \[\],\1 = \['${DPREFIX}/external/include'\]," setup.py
-sed -i -e "s,\(lib_dirs\) = \[\],\1 = \['${DPREFIX}/external/lib'\]," setup.py
-env CPPFLAGS="-I${DPREFIX}/external" LDFLAGS="-L${DPREFIX}/external" ./configure --prefix ${DPREFIX}
-make install
-
-# easy_install install
-cd ${DPREFIX}/src
-wget http://peak.telecommunity.com/dist/ez_setup.py
-${DPREFIX}/bin/python ./ez_setup.py
-${DPREFIX}/bin/easy_install pip
