@@ -1,0 +1,14 @@
+# TextFSM ifconfig sample.
+open("t","w").write("""Value Filldown Nic (\S+)
+Value Filldown Mac (\S+)
+Value Required Ip (\S+)
+Value Bcast (\S+)
+Value Mask (\S+)
+
+Start
+  ^${Nic}\s+Link encap:\w+\s+HWaddr\s${Mac} -> Record
+  ^\s+inet\s+addr:${Ip}\s+Bcast:${Bcast}\s+Mask:${Mask} -> Record
+  ^\s+inet\s+addr:${Ip}\s+Mask:${Mask} -> Record
+""")
+
+textfsm.TextFSM(open("t","r")).ParseText(aa)
