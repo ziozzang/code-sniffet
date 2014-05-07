@@ -1,0 +1,6 @@
+#!/bin/bash
+
+JOB_NAME=${JOB_NAME:-"jobid1"}
+
+
+sed -i "/#<<${JOB_NAME}/,/#>>${JOB_NAME}/d" /etc/crontab
