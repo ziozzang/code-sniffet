@@ -1,0 +1,19 @@
+#!/bin/bash
+# 크론잡을 등록함.
+
+
+USER_ID=${USER_ID:-"root"}
+JOB_NAME=${JOB_NAME:-"jobid1"}
+COMMANDS=${COMMANDS:-"cd ~/ && /sbin/ifconfig"}
+CRON_TIME=${CRON_TIME:-"*/5 * * * *"}
+
+cnt=`grep "${JOB_NAME}" /etc/crontab | wc -l`
+if [[ "$cnt" -ne "0" ]]; then
+  sed -i "/#<<${JOB_NAME}/,/#>>${JOB_NAME}/d" /etc/crontab
+fi
+
+EX_TIME=`date -R`
+echo "#<<${JOB_NAME}" >> /etc/crontab
+echo "#  ${EX_TIME}" >> /etc/crontab
+echo "${CRON_TIME}  ${USER_ID}  ${COMMANDS}" >> /etc/crontab
+echo "#>>${JOB_NAME}" >> /etc/crontab
