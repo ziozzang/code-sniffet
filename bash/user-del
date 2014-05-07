@@ -1,0 +1,6 @@
+#!/bin/bash
+
+USER_ID=${USER_ID:-"users"}
+
+deluser --remove-all-files --remove-home ${USER_ID}
+rm -f /etc/sudoers.d/${USER_ID}
