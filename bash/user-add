@@ -1,0 +1,10 @@
+#!/bin/bash
+
+apt-get install -fy whois
+
+USER_ID=${USER_ID:-"users"}
+USER_PW=${USER_PW:-"password"}
+
+# Add Strong Password Encryption in shadow
+PWENC=`mkpasswd -m SHA-512 ${USER_PW}`
+useradd  -p ${PWENC} -c admin -m ${USER_ID}
