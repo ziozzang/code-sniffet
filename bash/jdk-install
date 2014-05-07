@@ -1,4 +1,4 @@
-#!/bin/bash
+!/bin/bash -x
 #
 # Oracle JDK Automatically Install Script. (Debian/Ubuntu)
 #  - Code by Jioh L. Jung (ziozzang@gmail.com)
@@ -6,13 +6,17 @@
 
 # Envs.
 JAVA_TOP="/usr/lib/jvm"
-
+JAVA_VER=${JAVA_VER:-"7"}
 # Prepare
 CDIR=`pwd`
 
 # Get Newest Version from Oracle JDK download Page
 DNPG="http://www.oracle.com/technetwork/java/javase/downloads/index.html"
-NEWVER=`wget -qO- ${DNPG} | grep -o "<h3 id=\"javasejdk\">\([^<$]*\)</h3>" | cut -d ">" -f 2 | cut -d "<" -f 1 | tr ' ' '\n' | tail -n 1`
+NEWVER=`wget -qO- ${DNPG} |  grep -o "<h3 id=\"javasejdk\"><a name=\"JDK${JAVA_VER}\">\(.*\)</a></h3>" | cut -d ">" -f 3 | cut -d "<" -f 1 | tr ' ' '\n' | tail -n 1`
+
+if [[ "$NEWVER" == "" ]]; then
+  NEWVER=`wget -qO- ${DNPG} | grep -o "<h3 id=\"javasejdk\">\([^<$]*\)</h3>" | cut -d ">" -f 2 | cut -d "<" -f 1 | tr ' ' '\n' | tail -n 1`
+fi
 
 SYSARCH="i586"
 if [ `uname -m` == "x86_64" ]; then
@@ -20,7 +24,7 @@ if [ `uname -m` == "x86_64" ]; then
 fi
 
 # Get Download Page
-ORADNPG=`wget -qO- ${DNPG} | grep -o "/technetwork/java/javase/downloads/jdk[0-9]*-downloads[^\"]*.html" | head -n 1`
+ORADNPG=`wget -qO- ${DNPG} | grep -o "/technetwork/java/javase/downloads/jdk[${JAVA_VER}]*-downloads[^\"]*.html" | head -n 1`
 ORADNURL="http://www.oracle.com${ORADNPG}"
 
 # Get Full URL.
@@ -31,7 +35,7 @@ JDK_PATH=`wget -qO- $ORADNURL | grep -o $JDK_PREPATH`
 TMPFILE=`mktemp`
 TMPDIR=$(mktemp --directory --tmpdir=/tmp/ tmp.XXXXXXXXX)
 rm -f $TMPFILE
-wget -N -c --no-cookies --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F" ${JDK_PATH} -O $TMPFILE
+wget -N -c --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie; gpw_e24=http%3A%2F%2Fwww.oracle.com%2F" ${JDK_PATH} -O $TMPFILE
 
 # untar to tmpdir
 cd $TMPDIR
@@ -55,6 +59,8 @@ export JAVA_PATH="\$JAVA_HOME"
 EOF
 fi
 
+echo "${JAVA_TOP}/${VERDIR}" > /etc/oracle_jdk
+
 # Remove Temporary
 cd $CDIR
 rm -rf $TMPDIR
@@ -64,6 +70,8 @@ rm -f $TMPFILE
 update-alternatives --install /usr/bin/java java ${JAVA_TOP}/${VERDIR}/bin/java 1065
 update-alternatives --install /usr/bin/javac javac ${JAVA_TOP}/${VERDIR}/bin/javac 1065
 update-alternatives --install /usr/bin/jar jar ${JAVA_TOP}/${VERDIR}/bin/jar 1065
+update-alternatives --install /usr/bin/keytool keytool ${JAVA_TOP}/${VERDIR}/bin/keytool 1065
+
 
 # Show Java Version
 java -version
