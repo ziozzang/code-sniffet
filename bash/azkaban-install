@@ -1,0 +1,231 @@
+#!/bin/bash -x
+
+
+MYSQL_AZKABAN_ID=${MYSQL_AZKABAN_ID:-"azkaban"}
+MYSQL_AZKABAN_PW=${MYSQL_AZKABAN_PW:-"azkaban"}
+MYSQL_AZKABAN_DB=${MYSQL_AZKABAN_DB:-"azkaban"}
+MYSQL_AZKABAN_IP=${MYSQL_AZKABAN_IP:-"localhost"}
+MYSQL_AZKABAN_PORT=${MYSQL_AZKABAN_PORT:-"3306"}
+
+AZKABAN_KEY_PW=${KEY_PW:-"password"}
+AZKABAN_VERSION=${AZKABAN_VERSION:-"2.1"}
+cwd=`pwd`
+TARGET_DIR="/opt/azkaban"
+
+mkdir -p "${TARGET_DIR}"
+cd "${TARGET_DIR}"
+
+MYSQL_VERSION=$(apt-cache show mysql-server | grep ^Source | uniq  | cut -d- -f2)
+apt-get install -fy mysql-client-core-${MYSQL_VERSION}
+
+# MySQL JAVA connector
+apt-get install -fy libmysql-java
+
+# 웹 서비스 모듈
+wget https://s3.amazonaws.com/azkaban2/azkaban2/${AZKABAN_VERSION}/azkaban-web-server-${AZKABAN_VERSION}.tar.gz
+
+# 실행 모듈
+wget https://s3.amazonaws.com/azkaban2/azkaban2/${AZKABAN_VERSION}/azkaban-executor-server-${AZKABAN_VERSION}.tar.gz
+
+# Mysql 스크립트 파일
+wget https://s3.amazonaws.com/azkaban2/azkaban2/${AZKABAN_VERSION}/azkaban-sql-script-${AZKABAN_VERSION}.tar.gz
+
+# plugin 파일
+wget https://s3.amazonaws.com/azkaban2/azkaban-plugins/azkaban-jobtype-${AZKABAN_VERSION}.tar.gz
+
+tar -xzvf azkaban-executor-server-${AZKABAN_VERSION}.tar.gz
+tar -xzvf azkaban-jobtype-${AZKABAN_VERSION}.tar.gz
+tar -xzvf azkaban-sql-script-${AZKABAN_VERSION}.tar.gz
+tar -xzvf azkaban-web-server-${AZKABAN_VERSION}.tar.gz
+
+if [[ -f "/etc/init.d/azkaban-executor" ]]; then
+  service azkaban-executor stop
+fi
+
+if [[ -f "/etc/init.d/azkaban-web" ]]; then
+  service azkaban-web stop
+fi
+
+# Create Very Init DB scheme
+mysql -h ${MYSQL_AZKABAN_IP} -P ${MYSQL_AZKABAN_PORT} -u${MYSQL_AZKABAN_ID} -p${MYSQL_AZKABAN_PW} ${MYSQL_AZKABAN_DB} \
+  < ${TARGET_DIR}/azkaban-${AZKABAN_VERSION}/create-all-sql-${AZKABAN_VERSION}.sql
+
+
+# Generate Keystore
+rm -f keystore
+keytool -genkey -noprompt -keyalg RSA\
+ -alias jetty \
+ -dname "CN=jetty.mortbay.org, OU=Jetty, O=Mort Bay Consulting Pty. Ltd, L=Unknown, ST=Unknown, C=KR" \
+ -keystore keystore \
+ -storepass ${AZKABAN_KEY_PW} \
+ -keypass ${AZKABAN_KEY_PW}
+
+cnt=`grep AZKABAN /etc/profile | wc -l`
+if [[ "$cnt" -eq "0" ]]; then
+ cat >> /etc/profile << EOF
+export AZKABAN_HOME=${TARGET_DIR}/azkaban-${AZKABAN_VERSION}
+EOF
+fi
+
+# Create temporary directory
+mkdir -p ${TARGET_DIR}/tmp
+
+# Generate Configuration
+cat > ${TARGET_DIR}/azkaban-${AZKABAN_VERSION}/conf/azkaban.properties << EOF
+
+#Azkaban Personalization Settings
+azkaban.name=Local
+azkaban.label=My Local Azkaban
+azkaban.color=#FF3601
+web.resource.dir=web/
+default.timezone.id=Asia/Seoul
+
+#Azkaban UserManager class
+user.manager.class=azkaban.user.XmlUserManager
+user.manager.xml.file=${TARGET_DIR}/azkaban-${AZKABAN_VERSION}/conf/azkaban-users.xml
+
+#Loader for projects
+executor.global.properties=${TARGET_DIR}/azkaban-${AZKABAN_VERSION}/conf/global.properties
+azkaban.project.dir=projects
+
+database.type=mysql
+mysql.port=${MYSQL_AZKABAN_PORT}
+mysql.host=${MYSQL_AZKABAN_IP}
+mysql.database=${MYSQL_AZKABAN_DB}
+mysql.user=${MYSQL_AZKABAN_ID}
+mysql.password=${MYSQL_AZKABAN_PW}
+mysql.numconnections=100
+
+# Velocity dev mode
+velocity.dev.mode=false
+
+# Azkaban Jetty server properties. Ignored in tomcat
+jetty.maxThreads=25
+jetty.ssl.port=8443
+jetty.port=8081
+jetty.keystore=${TARGET_DIR}/keystore
+jetty.password=${AZKABAN_KEY_PW}
+jetty.keypassword=${AZKABAN_KEY_PW}
+jetty.truststore=${TARGET_DIR}/keystore
+jetty.trustpassword=${AZKABAN_KEY_PW}
+
+# Azkaban Executor settings
+executor.maxThreads=50
+executor.port=12321
+#executor.shared.token=abcdefg
+executor.flow.threads=30
+
+# mail settings
+mail.sender=
+mail.host=
+job.failure.email=
+job.success.email=
+
+lockdown.create.projects=false
+EOF
+
+# Copy Jobtype
+mkdir -p ${TARGET_DIR}/azkaban-${AZKABAN_VERSION}/plugins/jobtypes
+cp -rf ${TARGET_DIR}/azkaban-jobtype-${AZKABAN_VERSION}/java \
+  ${TARGET_DIR}/azkaban-${AZKABAN_VERSION}/plugins/jobtypes/
+
+# Update Start/Shutdown script
+sed -i \
+  -e "s,\(^azkaban_dir\)=.*,\1=${TARGET_DIR}/azkaban-${AZKABAN_VERSION},g" \
+  -e "s,\(^base_dir\)=.*,\1=${TARGET_DIR}/azkaban-${AZKABAN_VERSION},g" \
+  -e "s,\(^tmpdir\)=.*,\1=${TARGET_DIR}/tmp,g" \
+     ${TARGET_DIR}/azkaban-${AZKABAN_VERSION}/bin/azkaban-executor-start.sh
+
+sed -i \
+  -e "s,\(^azkaban_dir\)=.*,\1=${TARGET_DIR}/azkaban-${AZKABAN_VERSION},g" \
+  -e "s,\(^base_dir\)=.*,\1=${TARGET_DIR}/azkaban-${AZKABAN_VERSION},g" \
+  -e "s,\(^tmpdir\)=.*,\1=${TARGET_DIR}/tmp,g" \
+     ${TARGET_DIR}/azkaban-${AZKABAN_VERSION}/bin/azkaban-web-start.sh
+
+sed -i -e "s,currentpid,/var/run/azkaban-executor.pid,g" \
+      ${TARGET_DIR}/azkaban-${AZKABAN_VERSION}/bin/azkaban-executor-start.sh
+sed -i -e "s,currentpid,/var/run/azkaban-executor.pid,g" \
+      ${TARGET_DIR}/azkaban-${AZKABAN_VERSION}/bin/azkaban-executor-shutdown.sh
+sed -i -e "s,currentpid,/var/run/azkaban-web.pid,g" \
+      ${TARGET_DIR}/azkaban-${AZKABAN_VERSION}/bin/azkaban-web-start.sh
+sed -i -e "s,currentpid,/var/run/azkaban-web.pid,g" \
+      ${TARGET_DIR}/azkaban-${AZKABAN_VERSION}/bin/azkaban-web-shutdown.sh
+
+sed -i \
+  -e "s,^java,nohup java,g" \
+  -e "s,\&,>> /var/log/azkaban-executor\.log 2\>\&1 \&,g" \
+      ${TARGET_DIR}/azkaban-${AZKABAN_VERSION}/bin/azkaban-executor-start.sh
+
+sed -i \
+  -e "s,^java,nohup java,g" \
+  -e "s,\&,>> /var/log/azkaban-web\.log 2\>\&1 \&,g" \
+      ${TARGET_DIR}/azkaban-${AZKABAN_VERSION}/bin/azkaban-web-start.sh
+
+# Copy mysql-connector
+cp /usr/share/java/mysql-connector-java-*.jar \
+  ${TARGET_DIR}/azkaban-${AZKABAN_VERSION}/extlib/
+
+# Generate upstart
+cat > /etc/init.d/azkaban-executor <<EOF
+#!/bin/bash
+
+AZKABAN_HOME=${TARGET_DIR}/azkaban-${AZKABAN_VERSION}
+
+cd \${AZKABAN_HOME}
+
+case "\$1" in
+  start)
+        \${AZKABAN_HOME}/bin/azkaban-executor-start.sh
+        ;;
+  restart|reload|force-reload)
+        \${AZKABAN_HOME}/bin/azkaban-executor-shutdown.sh
+        \${AZKABAN_HOME}/bin/azkaban-executor-start.sh
+        ;;
+  stop)
+        \${AZKABAN_HOME}/bin/azkaban-executor-shutdown.sh
+        ;;
+  *)
+        echo "Usage: \$0 start|stop" >&2
+        exit 3
+        ;;
+esac
+EOF
+
+cat > /etc/init.d/azkaban-web <<EOF
+#!/bin/bash
+
+AZKABAN_HOME=${TARGET_DIR}/azkaban-${AZKABAN_VERSION}
+
+cd \${AZKABAN_HOME}
+
+case "\$1" in
+  start)
+        \${AZKABAN_HOME}/bin/azkaban-web-start.sh
+        ;;
+  restart|reload|force-reload)
+        \${AZKABAN_HOME}/bin/azkaban-web-shutdown.sh
+        \${AZKABAN_HOME}/bin/azkaban-web-start.sh
+        ;;
+  stop)
+        \${AZKABAN_HOME}/bin/azkaban-web-shutdown.sh
+        ;;
+  *)
+        echo "Usage: \$0 start|stop" >&2
+        exit 3
+        ;;
+esac
+EOF
+
+chmod +x /etc/init.d/azkaban-*
+
+
+cd ${cwd}
+
+update-rc.d -f azkaban-executor remove
+update-rc.d azkaban-executor defaults
+service azkaban-executor start
+
+update-rc.d -f azkaban-web remove
+update-rc.d azkaban-web defaults
+service azkaban-web start
+service azkaban-executor start
