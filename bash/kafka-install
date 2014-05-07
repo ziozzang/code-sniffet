@@ -1,0 +1,86 @@
+#!/bin/bash
+
+
+KAFKA_URL=${KAFKA_URL:-"https://dist.apache.org/repos/dist/release/kafka/0.8.1/kafka_2.8.0-0.8.1.tgz"}
+KAFKA_DIR="kafka_2.8.0-0.8.1"
+KAFKA_PATH=${KAFKA_PATH:-"/opt/kafka"}
+KAFKA_DATA_PATH=${KAFKA_DATA_PATH:-"/data/kafka"}
+KAFKA_PORT=${KAFKA_PORT:-"9999"}
+
+cwd=`pwd`
+
+mkdir -p ${KAFKA_PATH}
+cd ${KAFKA_PATH}
+wget -O "${KAFKA_DIR}.tgz"  "${KAFKA_URL}"
+tar -xzvf ${KAFKA_DIR}.tgz
+
+if [[ -f "/etc/init.d/kafka-server" ]]; then
+  service kafka-server stop
+fi
+
+if [[ -f "/etc/init.d/kafka-zookeeper" ]]; then
+  service kafka-zookeeper stop
+fi
+
+# 설정 변경
+sed -i -e "s,\(^log\.dir\)=.*,\1=${KAFKA_DATA_PATH},g" ./config/server.properties
+
+
+cat > /etc/init/kafka-server.conf <<EOF
+description     "kafka-server"
+
+start on (kafka-zookeeper
+          and runlevel [2345])
+
+stop on runlevel [016]
+
+respawn limit 10 5
+
+env JMX_PORT=${KAFKA_PORT}
+env KAFKA_HOME=${KAFKA_PATH}/${KAFKA_DIR}
+env DATA_DIR=${KAFKA_DATA_PATH}
+env CONFIG_DIR=/etc/kafka
+
+console output
+
+script
+  if [ -f /etc/default/kafka-server ]; then
+    . /etc/default/kafka-server
+  fi
+
+  exec \${KAFKA_HOME}/bin/kafka-server-start.sh \
+       \${KAFKA_HOME}/config/server.properties
+
+end script
+EOF
+
+cat > /etc/init/kafka-zookeeper.conf <<EOF
+description     "kafka-zookeeper"
+
+stop on runlevel [016]
+
+respawn limit 10 5
+
+env ZK_HOME=${KAFKA_PATH}/${KAFKA_DIR}
+env DATA_DIR=${KAFKA_DATA_PATH}
+env CONFIG_DIR=/etc/kafka
+
+console output
+
+script
+  if [ -f /etc/default/kafka-zookeeper ]; then
+    . /etc/default/kafka-zookeeper
+  fi
+
+  exec \${ZK_HOME}/bin/zookeeper-server-start.sh \
+       \${ZK_HOME}/config/zookeeper.properties
+
+end script
+EOF
+
+cd /etc/init.d
+ln -s /lib/init/upstart-job kafka-server
+ln -s /lib/init/upstart-job kafka-zookeeper
+
+
+cd ${cwd}
