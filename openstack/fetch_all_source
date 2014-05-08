@@ -1,0 +1,21 @@
+#!/bin/bash
+# Fetch all openstack project
+# - code by Jioh L. Jung (ziozzang@gmail.com)
+
+git clone https://github.com/openstack/openstack.git
+cd openstack
+rm -rf .git
+
+for i in $(ls -d */)
+do
+  rm -rf ${i%%/}
+  GIT_HUB_USERS="openstack"
+  if [ "${i%%/}" == "pbr" ] || [ "${i%%/}" == "devstack" ] ; then
+    GIT_HUB_USERS="openstack-dev"
+  elif [ "${i%%/}" == "devstack-gate" ]; then
+    GIT_HUB_USERS="openstack-infra"
+  fi
+
+  git clone https://github.com/${GIT_HUB_USERS}/${i%%/}.git
+  #echo ${i%%/}
+done
