@@ -1,0 +1,13 @@
+#우분투 이미지 생성시 커널 업데이트 막기
+KERNEL=`dpkg --get-selections | grep "linux-image-" | grep virtual | grep -w install | awk '{print $1}'`
+for OUTPUT in ${KERNEL}
+do
+  echo "${OUTPUT} hold" | dpkg --set-selections
+done
+ 
+ 
+HEADERS=`dpkg --get-selections | grep "linux-headers-" | grep virtual | grep -w install | awk '{print $1}'`
+for OUTPUT in ${HEADERS}
+do
+  echo "${OUTPUT} hold" | dpkg --set-selections
+done
