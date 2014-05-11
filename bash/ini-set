@@ -59,7 +59,7 @@ def get_split(lo, sp=None):
   if len(lo) == 0:
     return None
   k = s[0].strip("#")
-  if sp is None
+  if sp is None:
     v = lo[lo.find(s[0]) + len(s[0]):].strip()
   else:
     v = lo[lo.find(s[0]) + len(s[0]):].strip(sp)
