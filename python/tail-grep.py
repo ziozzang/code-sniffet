@@ -84,7 +84,7 @@ def main(argv):
     tmpfile = "/tmp/tmpsssss"
     copyfile(fname, tmpfile, pos=filelist[fname]["size"])
     dosearch(tmpfile, argv)
-    os.system("ls -al %s" % tmpfile)
+    #os.system("ls -al %s" % tmpfile)
     os.system("rm -f %s" % tmpfile)
 
   filelist[fname]["size"] = st.st_size  # Size
